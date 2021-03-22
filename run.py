@@ -9,7 +9,7 @@ window = np.array([])
 attention = 100.00
 count = 0
 SLIDER = 30
-THRESHOLD = 0.1
+THRESHOLD = 0.15
 while True:
     # Exctract frame
     _, frame = webcam.read()
