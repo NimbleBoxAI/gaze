@@ -6,7 +6,7 @@ from .eye import Eye
 from .calibration import Calibration
 
 
-class GazeTracking(object):
+class GazeTracker(object):
     """
     This class tracks the user's gaze.
     It provides useful information like the position of the eyes
@@ -24,7 +24,7 @@ class GazeTracking(object):
 
         # _predictor is used to get facial landmarks of a given face
         cwd = os.path.abspath(os.path.dirname(__file__))
-        model_path = os.path.abspath(os.path.join(cwd, "trained_models/shape_predictor_68_face_landmarks.dat"))
+        model_path = os.path.abspath(os.path.join(cwd, "trained_models/face_landmarks.dat"))
         self._predictor = dlib.shape_predictor(model_path)
 
     @property
@@ -39,7 +39,7 @@ class GazeTracking(object):
         except Exception:
             return False
 
-    def _analyze(self):
+    def analyze(self):
         """Detects the face and initialize Eye objects"""
         frame = cv2.cvtColor(self.frame, cv2.COLOR_BGR2GRAY)
         faces = self._face_detector(frame)
@@ -53,14 +53,14 @@ class GazeTracking(object):
             self.eye_left = None
             self.eye_right = None
 
-    def refresh(self, frame):
+    def infer(self, frame):
         """Refreshes the frame and analyzes it.
 
         Arguments:
             frame (numpy.ndarray): The frame to analyze
         """
         self.frame = frame
-        self._analyze()
+        self.analyze()
 
     def pupil_left_coords(self):
         """Returns the coordinates of the left pupil"""
@@ -96,28 +96,12 @@ class GazeTracking(object):
             pupil_right = self.eye_right.pupil.y / (self.eye_right.center[1] * 2 - 10)
             return (pupil_left + pupil_right) / 2
 
-    def is_right(self):
-        """Returns true if the user is looking to the right"""
-        if self.pupils_located:
-            return self.horizontal_ratio() <= 0.35
-
-    def is_left(self):
-        """Returns true if the user is looking to the left"""
-        if self.pupils_located:
-            return self.horizontal_ratio() >= 0.65
-
     def is_center(self):
         """Returns true if the user is looking to the center"""
         if self.pupils_located:
             return self.is_right() is not True and self.is_left() is not True
         else:
             return False
-
-    def is_blinking(self):
-        """Returns true if the user closes his eyes"""
-        if self.pupils_located:
-            blinking_ratio = (self.eye_left.blinking + self.eye_right.blinking) / 2
-            return blinking_ratio > 3.8
 
     def annotated_frame(self):
         """Returns the main frame with pupils highlighted"""
