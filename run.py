@@ -1,7 +1,9 @@
 import cv2
 import numpy as np
 from gaze_tracking import GazeTracker
-from expression.src.check import guided_backprop
+from expression.src.check import predict_emotion
+import os
+os.environ['KMP_DUPLICATE_LIB_OK']='True'
 
 # Object creation for gaze tracking.
 gaze = GazeTracker()
@@ -21,12 +23,11 @@ while True:
     # Exctracting frame from the VideoCapture object.
     _, frame = webcam.read()
     count+= 1
+    emotion = predict_emotion(frame)
 
     # The frame to infer is sent to the infer function here. 
     gaze.infer(frame)
-    emotion = guided_backprop([{'path': frame}])
-
-    #frame = gaze.annotated_frame()
+    
     window = np.append(window, int(gaze.is_center()))
 
     # Here the moving average is calculated.
@@ -36,8 +37,10 @@ while True:
         window = np.array([])
 
     # Displaying the attention metric and infered frame to the screen.    
-    text = f'Attention : {attention:.2f} % ' + " " + emotion
+    text = f'Attention : {attention:.2f} % '
+    text2 = f'Emotion : {emotion}'
     cv2.putText(frame, text, (90, 60), cv2.FONT_HERSHEY_DUPLEX, 1.6, (147, 58, 31), 2)
+    cv2.putText(frame, text2, (90, 120), cv2.FONT_HERSHEY_DUPLEX, 1.6, (147, 58, 31), 2)
     cv2.imshow("Demo", frame)
     if cv2.waitKey(1) == 27:
         break

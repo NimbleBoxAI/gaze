@@ -1,1 +1,1 @@
-from .check import guided_backprop
+from .check import predict_emotion
