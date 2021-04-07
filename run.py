@@ -1,13 +1,13 @@
 import cv2
 import numpy as np
 from gaze_tracking import GazeTracker
+from expression.src.check import guided_backprop
 
 # Object creation for gaze tracking.
 gaze = GazeTracker()
 
 # Initializing the videoCapture object to infer the webcam stream.
 webcam = cv2.VideoCapture(0)
-
 moving_average = np.array([1])
 window = np.array([])
 
@@ -16,7 +16,6 @@ attention = 100.00
 count = 0
 SLIDER = 30
 THRESHOLD = 0.15
-
 while True:
 
     # Exctracting frame from the VideoCapture object.
@@ -25,7 +24,9 @@ while True:
 
     # The frame to infer is sent to the infer function here. 
     gaze.infer(frame)
-    frame = gaze.annotated_frame()
+    emotion = guided_backprop([{'path': frame}])
+
+    #frame = gaze.annotated_frame()
     window = np.append(window, int(gaze.is_center()))
 
     # Here the moving average is calculated.
@@ -35,7 +36,7 @@ while True:
         window = np.array([])
 
     # Displaying the attention metric and infered frame to the screen.    
-    text = f'Attention : {attention:.2f}%'
+    text = f'Attention : {attention:.2f} % ' + " " + emotion
     cv2.putText(frame, text, (90, 60), cv2.FONT_HERSHEY_DUPLEX, 1.6, (147, 58, 31), 2)
     cv2.imshow("Demo", frame)
     if cv2.waitKey(1) == 27:
