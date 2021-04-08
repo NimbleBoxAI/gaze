@@ -20,6 +20,7 @@ net = Model(num_classes=len(classes))
 checkpoint = torch.load('expression/trained/private_model_233_66.t7', map_location=torch.device('cpu'))
 net.load_state_dict(checkpoint['net'])
 net.eval()
+softmax = torch.nn.Softmax(dim=1)
 
 def preprocess(image):
     transform_test = transforms.Compose([
@@ -54,7 +55,8 @@ def predict_emotion(image):
 
     tf_img, face_present = preprocess(image)
     tf_img = tf_img.unsqueeze(0)
-    pred = net(tf_img)
+    pred = softmax(net(tf_img))
     pred_class = classes[torch.argmax(pred)]
-    return pred_class, face_present
+    happy_score = pred[0][3].detach().numpy() if face_present else None
+    return pred_class, happy_score, face_present
     
