@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 from gaze_tracking import GazeTracker
-from expression.src.check import predict_emotion
+from expression.src.predict import predict_emotion
 import os
 os.environ['KMP_DUPLICATE_LIB_OK']='True'
 
@@ -23,7 +23,7 @@ while True:
     # Exctracting frame from the VideoCapture object.
     _, frame = webcam.read()
     count+= 1
-    emotion = predict_emotion(frame)
+    emotion, face_found = predict_emotion(frame)
 
     # The frame to infer is sent to the infer function here. 
     gaze.infer(frame)
@@ -38,7 +38,10 @@ while True:
 
     # Displaying the attention metric and infered frame to the screen.    
     text = f'Attention : {attention:.2f} % '
-    text2 = f'Emotion : {emotion}'
+    if face_found:
+      text2 = f'Emotion : {emotion}'
+    else:
+      text2 = 'No face found'
     cv2.putText(frame, text, (90, 60), cv2.FONT_HERSHEY_DUPLEX, 1.6, (147, 58, 31), 2)
     cv2.putText(frame, text2, (90, 120), cv2.FONT_HERSHEY_DUPLEX, 1.6, (147, 58, 31), 2)
     cv2.imshow("Demo", frame)

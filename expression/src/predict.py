@@ -35,8 +35,8 @@ def preprocess(image):
         flags=cv2.CASCADE_SCALE_IMAGE
     )
 
-    if len(faces) == 0:
-        print('no face found')
+    face_check = len(faces)
+    if face_check == 0:
         face = cv2.resize(image, shape)
     else:
         (x, y, w, h) = faces[0]
@@ -44,13 +44,17 @@ def preprocess(image):
         face = cv2.resize(face, shape)
     img = Image.fromarray(face).convert('L')
     inputs = transform_test(img)
-    return inputs
+    
+    if face_check == 0:
+      return inputs, False
+    
+    return inputs, True
 
 def predict_emotion(image):
 
-    tf_img = preprocess(image)
+    tf_img, face_present = preprocess(image)
     tf_img = tf_img.unsqueeze(0)
     pred = net(tf_img)
     pred_class = classes[torch.argmax(pred)]
-    return pred_class
+    return pred_class, face_present
     

@@ -1,1 +1,1 @@
-from .check import predict_emotion
+from .predict import predict_emotion
