@@ -1,13 +1,15 @@
 import cv2
 import numpy as np
 from gaze_tracking import GazeTracker
+from expression.src.predict import predict_emotion
+import os
+os.environ['KMP_DUPLICATE_LIB_OK']='True'
 
 # Object creation for gaze tracking.
 gaze = GazeTracker()
 
 # Initializing the videoCapture object to infer the webcam stream.
 webcam = cv2.VideoCapture(0)
-
 moving_average = np.array([1])
 window = np.array([])
 
@@ -17,16 +19,19 @@ count = 0
 SLIDER = 30
 THRESHOLD = 0.15
 
+happiness = np.array([1])
 while True:
 
     # Exctracting frame from the VideoCapture object.
     _, frame = webcam.read()
     count+= 1
-
+    emotion, happy_score, face_found = predict_emotion(frame)
     # The frame to infer is sent to the infer function here. 
     gaze.infer(frame)
-    frame = gaze.annotated_frame()
+    
     window = np.append(window, int(gaze.is_center()))
+    if face_found:
+        happiness = np.append(happiness, happy_score) 
 
     # Here the moving average is calculated.
     if count%SLIDER == 0:
@@ -35,8 +40,15 @@ while True:
         window = np.array([])
 
     # Displaying the attention metric and infered frame to the screen.    
-    text = f'Attention : {attention:.2f}%'
-    cv2.putText(frame, text, (90, 60), cv2.FONT_HERSHEY_DUPLEX, 1.6, (147, 58, 31), 2)
+    text = f'Average attention : {attention:.2f} % '
+    if face_found:
+      text2 = f'Emotion : {emotion}'
+    else:
+      text2 = 'No face found'
+    text3 = f'Average happiness : {happiness.mean()*100:.2f} % '
+    cv2.putText(frame, text, (90, 60), cv2.FONT_HERSHEY_DUPLEX, 1, (147, 58, 31), 2)
+    cv2.putText(frame, text2, (90, 120), cv2.FONT_HERSHEY_DUPLEX, 1, (147, 58, 31), 2)
+    cv2.putText(frame, text3, (90, 180), cv2.FONT_HERSHEY_DUPLEX, 1, (147, 58, 31), 2)
     cv2.imshow("Demo", frame)
     if cv2.waitKey(1) == 27:
         break
