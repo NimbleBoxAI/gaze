@@ -1,6 +1,6 @@
 torchsummary==1.5.1
 opencv_contrib_python==4.5.1.48
-numpy==1.17.4
+numpy==1.22.0
 torch==1.8.1
 dlib==19.21.1
 torchvision==0.9.1
