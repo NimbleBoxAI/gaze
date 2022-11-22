@@ -4,4 +4,4 @@ numpy==1.17.4
 torch==1.8.1
 dlib==19.21.1
 torchvision==0.9.1
-Pillow==8.2.0
+Pillow==9.3.0
